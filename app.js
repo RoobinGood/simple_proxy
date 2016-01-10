@@ -14,6 +14,8 @@ var INNER_REQUEST_HEADERS = {
 		"Chrome/45.0.2454.101", "Safari/537.36"].join(" "),
 }
 
+request.defaults({'proxy':'http://31.173.74.73:8080/'});
+
 app.get('/get', function (outerRequest, outerResponse) {
 	var innerUrl = outerRequest.url.substr("/get?".length);
 	console.log(innerUrl);
@@ -76,16 +78,14 @@ app.get('/post', function (outerRequest, outerResponse) {
 });
 
 var port = process.env.PORT || 8085;
-app.listen(port, function() {
+var onListen = function() {
 	console.log("Listening on", port);
-});
+};
+
+app.listen(port, onListen);
 
 
-var getTest = function(serverAddress) {
-	var testUrl;
-	testUrl = "http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html";
-	testUrl = "http://hdrezka.me/series/horror/11460-vtoroy-shans.html";
-
+var getTest = function(serverAddress, testUrl) {
 	request.get({
 		url: ["http://", serverAddress, ":", port, "/get?", testUrl].join("")
 	}, function(error, response, body) {
@@ -117,6 +117,29 @@ var postTest = function(serverAddress) {
 
 var serverAddress;
 serverAddress = "127.0.0.1";
+var testUrls = [
+	"http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html",
+	"http://hdrezka.me/series/horror/11460-vtoroy-shans.html"
+];
+	
+testUrls.forEach(function(url) {
+	// getTest(serverAddress, url);
+});
+// postTest(serverAddress);
 
-getTest(serverAddress);
-postTest(serverAddress);
+
+// var Http = require('http');
+ 
+// var req = Http.request({
+// 	host: "31.173.74.73",
+//     // proxy IP
+//     port: 8080,
+//     // proxy port
+//     method: 'GET',
+//     path: 'http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html' // full URL as path
+// }, function (res) {
+//     res.on('data', function (data) {
+//         console.log(data.toString());
+//     });
+// });
+// req.end();
