@@ -1,5 +1,6 @@
 var express = require('express');
 var request = require('request');
+var Http = require('http');
 // var Anticipant = require('anticipant');
 
 var app = express();
@@ -14,13 +15,36 @@ var INNER_REQUEST_HEADERS = {
 		"Chrome/45.0.2454.101", "Safari/537.36"].join(" "),
 }
 
-request.defaults({'proxy':'http://31.173.74.73:8080/'});
-
 app.get('/get', function (outerRequest, outerResponse) {
 	var innerUrl = outerRequest.url.substr("/get?".length);
 	console.log(innerUrl);
 
-	request.get({
+	var req = Http.request({
+		host: "31.173.74.73",
+		port: 8080,
+		method: 'GET',
+		path: innerUrl,
+		headers: INNER_REQUEST_HEADERS,
+	}, function (res) {
+		var body = "";
+		res.on('data', function (data) {
+			body += data;
+		});
+		res.on('end', function() {
+			console.log("inner body: ", body.substr(0, 20));
+			outerResponse.writeHead(200, CORS_HEADERS);
+			outerResponse.write(body);
+			outerResponse.end();
+		});
+	});
+	req.on('error', function(error) {
+		console.log("inner error:", error);
+		outerResponse.writeHead(400);
+		outerResponse.end();
+	});
+	req.end();
+
+	/*request.get({
 		url: innerUrl,
 		headers: INNER_REQUEST_HEADERS,
 	}, function(error, innerResponse, body) {
@@ -38,7 +62,7 @@ app.get('/get', function (outerRequest, outerResponse) {
 		console.log("inner error:", error, innerResponse && innerResponse.statusCode);
 		outerResponse.writeHead(400);
 		outerResponse.end();
-	});
+	});*/
 });
 
 app.get('/post', function (outerRequest, outerResponse) {
@@ -123,23 +147,26 @@ var testUrls = [
 ];
 	
 testUrls.forEach(function(url) {
-	// getTest(serverAddress, url);
+	getTest(serverAddress, url);
 });
-// postTest(serverAddress);
+postTest(serverAddress);
 
 
-// var Http = require('http');
- 
 // var req = Http.request({
-// 	host: "31.173.74.73",
-//     // proxy IP
-//     port: 8080,
-//     // proxy port
-//     method: 'GET',
-//     path: 'http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html' // full URL as path
+// 	// host: "",
+// 	// port: 80,
+// 	path: "http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html",
+// 	method: 'GET',
 // }, function (res) {
-//     res.on('data', function (data) {
-//         console.log(data.toString());
-//     });
+// 	var body = "";
+// 	res.on('data', function (data) {
+// 		body += data;
+// 	});
+// 	res.on('end', function() {
+// 		console.log("inner body: ", body.substr(0, 20));
+// 	});
+// });
+// req.on('error', function(error) {
+// 	console.log("inner error:", error);
 // });
 // req.end();
