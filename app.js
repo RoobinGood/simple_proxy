@@ -13,11 +13,38 @@ var CORS_HEADERS = {
 var INNER_REQUEST_HEADERS = {
 	"User-Agent": ["Mozilla/5.0 (X11; Linux x86_64)", "AppleWebKit/537.36 (KHTML, like Gecko)", 
 		"Chrome/45.0.2454.101", "Safari/537.36"].join(" "),
+	"X-Requested-With": "XMLHttpRequest",
 }
+
 
 app.get('/get', function (outerRequest, outerResponse) {
 	var innerUrl = outerRequest.url.substr("/get?".length);
-	console.log(innerUrl);
+	console.log("get", innerUrl);
+
+	request.get({
+		url: innerUrl,
+		headers: INNER_REQUEST_HEADERS,
+	}, function(error, innerResponse, body) {
+		if (!error && innerResponse.statusCode == 200) {
+			console.log("inner body: ", body.substr(0, 20));
+			outerResponse.writeHead(200, CORS_HEADERS);
+			outerResponse.write(body);
+			outerResponse.end();
+		} else {
+			console.log("inner error:", error, innerResponse && innerResponse.statusCode);
+			outerResponse.writeHead(400);
+			outerResponse.end();
+		}
+	}, function() {
+		console.log("inner error:", error, innerResponse && innerResponse.statusCode);
+		outerResponse.writeHead(400);
+		outerResponse.end();
+	});
+});
+
+app.get('/get/proxy', function (outerRequest, outerResponse) {
+	var innerUrl = outerRequest.url.substr("/get/proxy?".length);
+	console.log("get/proxy", innerUrl);
 
 	var req = Http.request({
 		host: "31.173.74.73",
@@ -43,26 +70,6 @@ app.get('/get', function (outerRequest, outerResponse) {
 		outerResponse.end();
 	});
 	req.end();
-
-	/*request.get({
-		url: innerUrl,
-		headers: INNER_REQUEST_HEADERS,
-	}, function(error, innerResponse, body) {
-		if (!error && innerResponse.statusCode == 200) {
-			console.log("inner body: ", body.substr(0, 20));
-			outerResponse.writeHead(200, CORS_HEADERS);
-			outerResponse.write(body);
-			outerResponse.end();
-		} else {
-			console.log("inner error:", error, innerResponse && innerResponse.statusCode);
-			outerResponse.writeHead(400);
-			outerResponse.end();
-		}
-	}, function() {
-		console.log("inner error:", error, innerResponse && innerResponse.statusCode);
-		outerResponse.writeHead(400);
-		outerResponse.end();
-	});*/
 });
 
 app.get('/post', function (outerRequest, outerResponse) {
@@ -101,55 +108,17 @@ app.get('/post', function (outerRequest, outerResponse) {
 	});
 });
 
-var port = process.env.PORT || 8085;
-var onListen = function() {
-	console.log("Listening on", port);
-};
+module.exports.app = app;
 
-app.listen(port, onListen);
-
-
-var getTest = function(serverAddress, testUrl) {
-	request.get({
-		url: ["http://", serverAddress, ":", port, "/get?", testUrl].join("")
-	}, function(error, response, body) {
-		if (!error && response.statusCode == 200) {
-			console.log("get proxy response", body.substr(0, 50));
-			// console.log("proxy response", response);
-		} else {
-			console.log("get proxy error:", error);
-		}
-	});
-}
-
-var postTest = function(serverAddress) {
-	var testUrl;
-	testUrl = ["http://hdrezka.me/engine/ajax/getcdnvideo.php", "id=234&translator_id=1"].join("?");
-
-	request.get({
-		url: ["http://", serverAddress, ":", port, "/post?", testUrl].join("")
-	}, function(error, response, body) {
-		if (!error && response.statusCode == 200) {
-			console.log("post proxy response", body.substr(0, 50));
-			// console.log("proxy response", response);
-		} else {
-			console.log("post proxy error:", error);
-		}
+if (!module.parent) {
+	var port = process.env.PORT || 8085;
+	var server = app.listen(port, function() {
+		console.log("Listening on", port);
 	});
 }
 
 
-var serverAddress;
-serverAddress = "127.0.0.1";
-var testUrls = [
-	"http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html",
-	"http://hdrezka.me/series/horror/11460-vtoroy-shans.html"
-];
-	
-testUrls.forEach(function(url) {
-	getTest(serverAddress, url);
-});
-postTest(serverAddress);
+
 
 
 // var req = Http.request({
