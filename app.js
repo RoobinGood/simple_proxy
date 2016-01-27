@@ -44,11 +44,33 @@ app.get('/get', function (outerRequest, outerResponse) {
 
 app.get('/get/proxy', function (outerRequest, outerResponse) {
 	var innerUrl = outerRequest.url.substr("/get/proxy?".length);
-	console.log("get/proxy", innerUrl);
+	var country = innerUrl.split("&")[0];
+	innerUrl = innerUrl.substr(3);
+	console.log("get/proxy", country, innerUrl);
+
+	var host, port;
+	switch (country) {
+		case "RU": 
+			host = "31.173.74.73";
+			port = 8080;
+			break;
+
+		case "DE":
+			host = "144.76.232.58";
+			port = 3128;
+			break;
+	}
+
+	if (!host || !port) {
+		console.log("wrong country");
+		outerResponse.writeHead(401);
+		outerResponse.end();
+		return;
+	}
 
 	var req = Http.request({
-		host: "31.173.74.73",
-		port: 8080,
+		host: host,
+		port: port,
 		method: 'GET',
 		path: innerUrl,
 		headers: INNER_REQUEST_HEADERS,
