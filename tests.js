@@ -81,6 +81,11 @@ var testAnticipant = Anticipant.create(["all_tests"], function() {
 });
 
 runTestsGet(serverAddress);
-runTestsPost(serverAddress);
+// runTestsPost(serverAddress);
 
-testAnticipant.perform("all_tests");
+setTimeout(function() {
+	runTestsGet(serverAddress);
+	// runTestsPost(serverAddress);
+	
+	testAnticipant.perform("all_tests");
+}, 5000);

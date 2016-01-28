@@ -16,6 +16,8 @@ var INNER_REQUEST_HEADERS = {
 	"X-Requested-With": "XMLHttpRequest",
 }
 
+var cache = {};
+var CACHE_MAX_AGE = 3000;
 
 app.get('/get', function (outerRequest, outerResponse) {
 	var innerUrl = outerRequest.url.substr("/get?".length);
@@ -26,7 +28,7 @@ app.get('/get', function (outerRequest, outerResponse) {
 		headers: INNER_REQUEST_HEADERS,
 	}, function(error, innerResponse, body) {
 		if (!error && innerResponse.statusCode == 200) {
-			console.log("inner body: ", body.substr(0, 20));
+			console.log("inner body:", body.substr(0, 20));
 			outerResponse.writeHead(200, CORS_HEADERS);
 			outerResponse.write(body);
 			outerResponse.end();
@@ -48,50 +50,63 @@ app.get('/get/proxy', function (outerRequest, outerResponse) {
 	innerUrl = innerUrl.substr(3);
 	console.log("get/proxy", country, innerUrl);
 
-	var host, port;
-	switch (country) {
-		case "RU": 
-			host = "31.173.74.73";
-			port = 8080;
-			break;
-
-		case "DE":
-			host = "144.76.232.58";
-			port = 3128;
-			break;
-	}
-
-	if (!host || !port) {
-		console.log("wrong country");
-		outerResponse.writeHead(401);
+	if (cache[innerUrl]) {
+		console.log("cache body: ", cache[innerUrl].substr(0, 20));
+		outerResponse.writeHead(200, CORS_HEADERS);
+		outerResponse.write(cache[innerUrl]);
 		outerResponse.end();
-		return;
-	}
+	} else {
+		var host, port;
+		switch (country) {
+			case "RU": 
+				host = "31.173.74.73";
+				port = 8080;
+				break;
 
-	var req = Http.request({
-		host: host,
-		port: port,
-		method: 'GET',
-		path: innerUrl,
-		headers: INNER_REQUEST_HEADERS,
-	}, function (res) {
-		var body = "";
-		res.on('data', function (data) {
-			body += data;
+			case "DE":
+				host = "144.76.232.58";
+				port = 3128;
+				break;
+		}
+
+		if (!host || !port) {
+			console.log("wrong country");
+			outerResponse.writeHead(401);
+			outerResponse.end();
+			return;
+		}
+
+		var req = Http.request({
+			host: host,
+			port: port,
+			method: 'GET',
+			path: innerUrl,
+			headers: INNER_REQUEST_HEADERS,
+		}, function (res) {
+			var body = "";
+			res.on('data', function (data) {
+				body += data;
+			});
+			res.on('end', function() {
+				cache[innerUrl] = body;
+				setTimeout(function() {
+					delete cache[innerUrl];
+				}, CACHE_MAX_AGE);
+
+				console.log("inner body: ", body.substr(0, 20));
+				outerResponse.writeHead(200, CORS_HEADERS);
+				outerResponse.write(body);
+				outerResponse.end();
+			});
 		});
-		res.on('end', function() {
-			console.log("inner body: ", body.substr(0, 20));
-			outerResponse.writeHead(200, CORS_HEADERS);
-			outerResponse.write(body);
+		req.on('error', function(error) {
+			console.log("inner error:", error);
+			outerResponse.writeHead(400);
 			outerResponse.end();
 		});
-	});
-	req.on('error', function(error) {
-		console.log("inner error:", error);
-		outerResponse.writeHead(400);
-		outerResponse.end();
-	});
-	req.end();
+		req.end();
+	}
+
 });
 
 app.get('/post', function (outerRequest, outerResponse) {
@@ -138,26 +153,3 @@ if (!module.parent) {
 		console.log("Listening on", port);
 	});
 }
-
-
-
-
-
-// var req = Http.request({
-// 	// host: "",
-// 	// port: 80,
-// 	path: "http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html",
-// 	method: 'GET',
-// }, function (res) {
-// 	var body = "";
-// 	res.on('data', function (data) {
-// 		body += data;
-// 	});
-// 	res.on('end', function() {
-// 		console.log("inner body: ", body.substr(0, 20));
-// 	});
-// });
-// req.on('error', function(error) {
-// 	console.log("inner error:", error);
-// });
-// req.end();
