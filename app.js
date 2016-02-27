@@ -57,6 +57,8 @@ app.get('/get/proxy', function (outerRequest, outerResponse) {
 		outerResponse.end();
 	} else {
 		var host, port;
+
+		// http://spys.ru/free-proxy-list/DE/
 		switch (country) {
 			case "RU": 
 				host = "31.173.74.73";
@@ -64,7 +66,7 @@ app.get('/get/proxy', function (outerRequest, outerResponse) {
 				break;
 
 			case "DE":
-				host = "144.76.232.58";
+				host = "85.114.130.226";
 				port = 3128;
 				break;
 		}

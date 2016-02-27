@@ -37,15 +37,15 @@ var postTest = function(serverAddress, testUrl, success) {
 
 var runTestsGet = function(serverAddress) {
 	var testUrls = [
-		{
+		/*{
 			url: "http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html",
-		}, {
+		}, */{
 			url: "http://seasonvar.ru/serial-12498-Flesh-2-season.html",
 			proxyCountry: "DE",
-		}, {
+		}, /*{
 			url: "http://hdrezka.me/series/horror/11460-vtoroy-shans.html",
 			proxyCountry: "RU",
-		},
+		},*/
 	];
 	testUrls.forEach(function(url) {
 		testAnticipant.register("test_item");
@@ -84,7 +84,7 @@ runTestsGet(serverAddress);
 // runTestsPost(serverAddress);
 
 setTimeout(function() {
-	runTestsGet(serverAddress);
+	// runTestsGet(serverAddress);
 	// runTestsPost(serverAddress);
 	
 	testAnticipant.perform("all_tests");
