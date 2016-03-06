@@ -5,8 +5,10 @@
   "private": true,
   "dependencies": {
     "anticipant": "^0.1.0",
+    "colors": "^1.1.2",
     "express": "^4.13.3",
-    "request": "^2.67.0"
+    "request": "^2.67.0",
+    "underscore": "^1.8.3"
   },
   "engines": {
     "node": "0.12.7",
