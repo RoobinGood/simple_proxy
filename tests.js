@@ -46,6 +46,9 @@ var runTestsGet = function(serverAddress) {
 			url: "http://google.com",
 		},
 		{
+			url: "http://www.seasonvar.ru/playls2//transNewStudio/12498/list.xml ",
+		},
+		{
 			url: "http://seasonvar.ru/serial-12498-Flesh-2-season.html",
 			proxyCountry: "DE",
 		},

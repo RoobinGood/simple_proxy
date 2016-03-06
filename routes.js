@@ -16,7 +16,7 @@ var INNER_REQUEST_HEADERS = {
 };
 
 var AVAILABLE_SITES = [
-	'http://hdrezka.me', 'http://seasonvar.ru'
+	'hdrezka.me', 'seasonvar.ru'
 ];
 
 // cache
@@ -80,7 +80,7 @@ var getProxyParams = function(country, success, fail) {
 
 var checkUrl = function(url) {
 	return _.some(AVAILABLE_SITES, function(item) {
-		return new RegExp('^' + item).test(url);
+		return new RegExp('^http\:\/\/(www.)?' + item).test(url);
 	});
 };
 
