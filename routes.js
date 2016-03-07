@@ -24,7 +24,7 @@ var cache = {};
 var CACHE_MAX_AGE = 3000;
 
 var cacheMiddleware = function(req, res, next) {
-	var innerUrl = req.queryParams[1];
+	var innerUrl = req.query.url;
 
 	if (cache[innerUrl]) {
 		console.log("get/proxy".blue, country.blue, innerUrl.blue);
@@ -88,16 +88,23 @@ var checkUrl = function(url) {
 // routes
 exports.init = function(app) {
 
+	app.use(function(req, res, next) {
+		var url = req.query.url;
+
+		if (checkUrl(url)) {
+			next();
+		} else {
+			console.log('url check error'.red);
+			res.writeHead(400);
+			res.end();
+		}
+	});
+
 	// args: url
 	app.get('/get',
 		function (outerRequest, outerResponse, next) {
-			var innerUrl = outerRequest.queryParams[0];
+			var innerUrl = outerRequest.query.url;
 			console.log("get".blue, innerUrl.blue);
-
-			if (!checkUrl(innerUrl)) {
-				next();
-				return;
-			}
 
 			request.get({
 				url: innerUrl,
@@ -118,14 +125,9 @@ exports.init = function(app) {
 	app.get('/get/proxy',
 		cacheMiddleware,
 		function (outerRequest, outerResponse, next) {
-			var country = outerRequest.queryParams[0];
-			var innerUrl = outerRequest.queryParams[1];
+			var innerUrl = outerRequest.query.url;
+			var country = outerRequest.query.country;
 			console.log("get/proxy".blue, country.blue, innerUrl.blue);
-
-			if (!checkUrl(innerUrl)) {
-				next();
-				return;
-			}
 
 			getProxyParams(country, function(proxyParams) {
 				var req = Http.request({
@@ -157,19 +159,10 @@ exports.init = function(app) {
 	// args: url, [params]
 	app.get('/post',
 		function (outerRequest, outerResponse, next) {
-			var innerUrl = outerRequest.queryParams[0].split('?')[0];
+			var innerUrl = outerRequest.query.url;
+			var params = JSON.parse(outerRequest.query.params);
+
 			console.log('post'.blue, innerUrl.blue);
-
-			if (!checkUrl(innerUrl)) {
-				next();
-				return;
-			}
-
-			var params = outerRequest.query;
-			var key = outerRequest.queryParams[0].split('?')[1];
-			params[key] = params[outerRequest.queryParams[0]];
-			delete params[outerRequest.queryParams[0]];
-
 			console.log('\t', params);
 
 			request.post({
