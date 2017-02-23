@@ -6,13 +6,13 @@ var colors = require('colors');
 
 var getTest = function(serverAddress, testUrl, proxyCountry, callback) {
 	request.get({
-		url: ["http://", serverAddress, ":", port, "/get", 
-			proxyCountry ? ('/proxy?country=' + proxyCountry + "&") : "?", 
+		url: ["http://", serverAddress, ":", port, "/get",
+			proxyCountry ? ('/proxy?country=' + proxyCountry + "&") : "?",
 			'url=', testUrl].join("")
 	}, function(error, response, body) {
 		var result = !error && response.statusCode == 200;
 		if (result) {
-			// console.log("get proxy response", body.substr(0, 50));
+			console.log("get proxy response", body.substr(0, 100));
 			if (body && body.length > 0) {
 				console.log("OK GET".blue, testUrl);
 			}
@@ -29,7 +29,7 @@ var postTest = function(serverAddress, testUrl, callback) {
 	}, function(error, response, body) {
 		var result = !error && response.statusCode == 200;
 		if (result) {
-			// console.log("post proxy response", body.substr(0, 50));
+			console.log("post proxy response", body.substr(0, 50));
 			if (body && body.length > 0) {
 				console.log("OK POST".blue, testUrl);
 			}
@@ -60,11 +60,17 @@ var runTestsGet = function(serverAddress) {
 			expect: true
 		},
 		{
+			url: "http://seasonvar.ru/serial-14024-Prostranstvo-2-season.html",
+			proxyCountry: "DE",
+			expect: true
+		},
+		{
 			url: "http://hdrezka.me/series/horror/11460-vtoroy-shans.html",
-			proxyCountry: "RU",
+			proxyCountry: 'RU',
 			expect: true
 		},
 	];
+
 
 	testUrls.forEach(function(item) {
 		testAnticipant.register("test_item" + item.url);
@@ -132,6 +138,6 @@ runTestsPost(serverAddress);
 setTimeout(function() {
 	// runTestsGet(serverAddress);
 	// runTestsPost(serverAddress);
-	
+
 	testAnticipant.perform("all_tests");
 }, 5000);

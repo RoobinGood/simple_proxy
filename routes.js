@@ -42,7 +42,7 @@ var saveInCache = function(requestUrl, data) {
 	setTimeout(function() {
 		delete cache[requestUrl];
 	}, CACHE_MAX_AGE);
-}
+};
 
 
 // utils
@@ -57,14 +57,18 @@ var getProxyParams = function(country, success, fail) {
 	// http://spys.ru/free-proxy-list/DE/
 	var proxyParams = {};
 	switch (country) {
-		case "RU": 
-			proxyParams.host = "31.173.74.73";
-			proxyParams.port = 8080;
+		// case "RU":
+		// 	proxyParams.host = "195.98.191.102";
+		// 	proxyParams.port = 8081;
+		// 	break;
+		case "RU":
+			proxyParams.host = "78.157.94.35";
+			proxyParams.port = 3128;
 			break;
 
 		case "DE":
-			proxyParams.host = "85.114.130.226";
-			proxyParams.port = 3128;
+			proxyParams.host = "52.59.38.179";
+			proxyParams.port = 8083;
 			break;
 
 		default:
