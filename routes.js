@@ -1,5 +1,6 @@
 var request = require('request');
 var Http = require('http');
+var urlUtils = require('url');
 var colors = require('colors');
 var _ = require('underscore');
 
@@ -10,14 +11,41 @@ var CORS_HEADERS = {
 };
 
 var INNER_REQUEST_HEADERS = {
-	"User-Agent": ["Mozilla/5.0 (X11; Linux x86_64)", "AppleWebKit/537.36 (KHTML, like Gecko)", 
-		"Chrome/45.0.2454.101", "Safari/537.36"].join(" "),
-	"X-Requested-With": "XMLHttpRequest",
+	'User-Agent': [
+		'Mozilla/5.0 (X11; Linux x86_64)', 'AppleWebKit/537.36 (KHTML, like Gecko)',
+		'Chrome/53.0.2785.116', 'Safari/537.36'
+	].join(' '),
+	'X-Requested-With': 'XMLHttpRequest'
 };
 
-var AVAILABLE_SITES = [
-	'hdrezka.me', 'seasonvar.ru'
-];
+var additionalHeaders = {
+	'hdrezka.me': {
+		'Host': 'hdrezka.me'
+		// 'Upgrade-Insecure-Requests': '1',
+	},
+	'seasonvar.ru': {}
+};
+
+var availableHosts = _(additionalHeaders).keys();
+
+var checkUrl = function(url) {
+	var hostname = urlUtils.parse(url).hostname;
+	return _(availableHosts).any(function(availableHost) {
+		return availableHost === hostname;
+	});
+};
+
+var getInnerRequestHeaders = function(url) {
+	var hostname = urlUtils.parse(url).hostname;
+	console.log(hostname)
+	console.log(_({}).extend(
+		INNER_REQUEST_HEADERS, additionalHeaders[hostname]
+	))
+	return _({}).extend(
+		INNER_REQUEST_HEADERS, additionalHeaders[hostname]
+	);
+};
+
 
 // cache
 var cache = {};
@@ -54,16 +82,13 @@ var sendResponse = function(res, data) {
 };
 
 var getProxyParams = function(country, success, fail) {
+	// http://spys.ru/free-proxy-list/RU/
 	// http://spys.ru/free-proxy-list/DE/
 	var proxyParams = {};
 	switch (country) {
-		// case "RU":
-		// 	proxyParams.host = "195.98.191.102";
-		// 	proxyParams.port = 8081;
-		// 	break;
-		case "RU":
-			proxyParams.host = "78.157.94.35";
-			proxyParams.port = 3128;
+		case 'RU':
+			proxyParams.host = '62.148.134.138';
+			proxyParams.port = 8081;
 			break;
 
 		case "DE":
@@ -81,13 +106,6 @@ var getProxyParams = function(country, success, fail) {
 		fail();
 	}
 };
-
-var checkUrl = function(url) {
-	return _.some(AVAILABLE_SITES, function(item) {
-		return new RegExp('^http\:\/\/(www.)?' + item).test(url);
-	});
-};
-
 
 // routes
 exports.init = function(app) {
@@ -112,7 +130,7 @@ exports.init = function(app) {
 
 			request.get({
 				url: innerUrl,
-				headers: INNER_REQUEST_HEADERS,
+				headers: getInnerRequestHeaders(innerUrl),
 			}, function(error, innerResponse, body) {
 				if (!error && innerResponse.statusCode == 200) {
 					sendResponse(outerResponse, body);
@@ -139,7 +157,7 @@ exports.init = function(app) {
 					port: proxyParams.port,
 					method: 'GET',
 					path: innerUrl,
-					headers: INNER_REQUEST_HEADERS,
+					headers: getInnerRequestHeaders(innerUrl),
 				}, function (res) {
 					var body = "";
 					res.on('data', function (data) {
@@ -156,7 +174,7 @@ exports.init = function(app) {
 				req.end();
 			}, function() {
 				next();
-			})
+			});
 		}
 	);
 
@@ -171,7 +189,7 @@ exports.init = function(app) {
 
 			request.post({
 				url: innerUrl,
-				headers: INNER_REQUEST_HEADERS,
+				headers: getInnerRequestHeaders(innerUrl),
 				formData: params,
 			}, function(error, innerResponse, body) {
 				if (!error && innerResponse.statusCode == 200) {

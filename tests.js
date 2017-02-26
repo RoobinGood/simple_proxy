@@ -12,12 +12,12 @@ var getTest = function(serverAddress, testUrl, proxyCountry, callback) {
 	}, function(error, response, body) {
 		var result = !error && response.statusCode == 200;
 		if (result) {
-			console.log("get proxy response", body.substr(0, 100));
+			console.log("get proxy response", body.substr(0, 1000));
 			if (body && body.length > 0) {
 				console.log("OK GET".blue, testUrl);
 			}
 		} else {
-			console.log("FAIL".blue, testUrl);
+			console.log("FAIL".blue, testUrl, '-', response.statusCode);
 		}
 		callback && callback(result);
 	});
@@ -43,12 +43,12 @@ var postTest = function(serverAddress, testUrl, callback) {
 var runTestsGet = function(serverAddress) {
 	var testUrls = [
 		{
-			url: "http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html",
-			expect: true
-		},
-		{
 			url: "http://google.com",
 			expect: false
+		},
+		{
+			url: "http://seasonvar.ru/serial-12490-Tyazhlyj_ob_ekt-1-season.html",
+			expect: true
 		},
 		{
 			url: "http://www.seasonvar.ru/playls2//transNewStudio/12498/list.xml ",
@@ -65,7 +65,7 @@ var runTestsGet = function(serverAddress) {
 			expect: true
 		},
 		{
-			url: "http://hdrezka.me/series/horror/11460-vtoroy-shans.html",
+			url: "http://hdrezka.me/cartoons/foreign/2136-rik-i-morti.html",
 			proxyCountry: 'RU',
 			expect: true
 		},
